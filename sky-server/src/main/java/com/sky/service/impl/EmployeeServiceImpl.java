@@ -126,4 +126,16 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build();
         employeeMapper.update(employee);
     }
+
+    /**
+     * 根据id查询信息
+     * @param id
+     * @return
+     */
+    public Employee getById(Long id) {
+        Employee employee = employeeMapper.getById(id);
+        //获取密码并处理隐藏
+        employee.setPassword("****");
+        return employee;
+    }
 }
