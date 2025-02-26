@@ -8,6 +8,7 @@ import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
+import com.sky.entity.Setmeal;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
@@ -184,4 +185,37 @@ public class DishServiceImpl implements DishService {
         }
         return dishVOList;
     }
+
+    /**
+     * 商品起售停售
+     * @param status
+     * @param id
+     */
+    //update employee set status = ? where id = ?
+    public void startOrStop(Integer status, Long id) {
+        Dish dish = Dish.builder()
+                .status(status)
+                .id(id)
+                .build();
+        dishMapper.update(dish);
+        //如果是停售操作，那么菜品所关联的套餐也不能售卖
+        if(status == StatusConstant.DISABLE){
+            ArrayList<Long> dishIds = new ArrayList<>();
+            dishIds.add(id);
+            // select setmealId from setmeal_dish where dish_id in (?,?,?)
+            List<Long> setmealIds = setmealDishMapper.getSetmealIdsByDishIds(dishIds);
+
+            if(setmealIds != null &&setmealIds.size()>0){
+                for (Long setmealId :setmealIds) {
+                    Setmeal setmeal = Setmeal.builder()
+                            .id(setmealId)
+                            .status(StatusConstant.DISABLE)
+                            .build();
+                    setmealMapper.update(setmeal);
+                }
+            }
+        }
+    }
+
+
 }
